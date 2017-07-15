@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="css/animate.min.css"/>
+		<link rel="stylesheet" type="text/css" href="css/animate.min.css"/>
+		<style type="text/css">
+			*{
+				margin: 0;
+				padding: 0;
+			}
+			html,body{
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+			}
+			/*进度条*/
+			.progress{
+		        position: fixed;
+		        top: 0;
+		        right: 0;
+		        left: 0;
+		        height: 2px;
+		        background: #f5f5f5;
+		        border-bottom: 1px solid #ddd;
+		    }
+		
+		    .progress-inner{
+		        width: 0;
+		        background: #d43f3a;
+		        position: absolute;
+		        top: 0;
+		        left: 0;
+		        bottom: 0;
+
+		    }
+		    /*首页*/
+		   	.home{
+		   		width: 100%;
+		   		height: 100%;
+		   		background: #E6E042;
+		   		position: relative;
+		   	}
+		   	.home .dds{
+		   		position: absolute;
+		   		top: 50%;
+		   		margin-top: -50%;
+		   		margin-left: 5%;
+		   		width: 90%;
+		   		
+		   	}
+		   	.home .dds img{
+		   		width: 100%;
+		   	}
+		   	.home .gameStart{
+		   		position: absolute;
+		   		bottom: 20%;
+		   		width: 80%;
+		   		height: 50px;
+		   		border: solid 5px white;
+		   		border-radius:10px ;
+		   		margin-left: 10%;
+		   		text-align: center;
+		   		line-height: 50px;
+		   		background: yellowgreen;
+		   		color: white;
+		   		font-size: 25px;
+		   		box-shadow: inset 2px 2px 1px #999;
+		   	}
+
+		   /*游戏页*/
+			.game{
+				width: 100%;
+				height: 100%;
+				background-image: url(img/dsbg.jpg);
+				background-size: 100% 100%;
+			}		  
+		    .burrow{
+		    	width: 100%;
+		    	margin: 0 auto;
+		    	padding-top: 40%;
+		    }    
+		    .burrow div{
+		    	width: 25%;
+		    	float: left;
+		    	display: inline-block;
+		    	font-size: 0;
+		    }
+		    .burrow div img{
+		    	width: 100%;
+		    }
+		    .score{
+		    	height: 20px;
+		    	width: 100%;
+		    	position: absolute;
+		    	bottom: 5%;
+		    	text-align: center;
+		    }
+		    .score h3{
+		    	font-size: 20px;
+		    	color: white;
+		    }
+		    /*结束页*/
+		   .end{
+		   		position: absolute;
+		   		top: 0;
+		   		left: 0;
+		   		z-index: 100;
+		   		width: 100%;
+		   		height: 100%;
+		   		background: rgba(0,0,0,.6);
+		   		/*opacity: .7;*/
+		   }
+		   .end h1{
+		   		color: white;
+		   		text-align: center;	
+		   		margin: 50% auto;
+		   }
+		   .end .img{
+		   		text-align: center;
+		   }
+		   .end .img img{
+		   		width: 70%;
+		   }
+		</style>
+	</head>
+	
+	<body ng-app="app" ng-controller="all">
+		<div class="progress">
+		    <div class="progress-inner" id="progress"></div>
+		</div>
+
+		<div class="home" ng-show="aa">
+			<div class="dds " >
+				<img src="img/dds.png" class="animated fadeInDown"/>
+			</div>
+			<div class="gameStart animated fadeInUpBig" ng-click="playGame()">开始游戏</div>
+		</div>
+		
+		<div class="game" ng-controller="game" ng-show="bb">
+			<div class="burrow">
+				<div ng-repeat="x in dsArr"><img ng-src="{{x.imgSrc}}" ng-click="clickMouse($event)"/></div>
+			</div>
+			<div class="score">
+				<h3>您的分数：{{score}}</h3>
+			</div>
+		</div>
+		
+		<div class="end" ng-show="cc">
+			<h1 style="color: white;">您的最终分数：{{score}}</h1>
+			<div class="img">
+				<img src="img/11.png" ng-click="again()"/>
+			</div>
+		</div>
+		
+		
+		<script src="js/jquery-3.2.1.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/angular.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			
+		(function (window,angular) {
+        // 获取进度条 div
+        var $progress = document.getElementById('progress');
+		var loading = document.getElementsByClassName("progress")[0];
+        // 初始进度，1%
+        var progress = 1;
+
+        // 生成随机数
+        var random = function(min, max){
+            return Math.floor(Math.random() * (max - min + 1) + min);
+            //Math.floor 方法用于对数值向下取整，即得到小于或等于该数值的最大整数
+        };
+
+        // 跑进度
+        var onprogress = function () {
+            // 随机时间
+            var timeout = random(10, 30);
+            
+            setTimeout(function () {
+                // 如果页面加载完毕，则直接进度到 100%
+                if(window.loaded){
+                    $progress.style.width = '100%';
+                    setTimeout(function(){
+                    	loading.style.display = "none";
+                    },500)
+                    return;
+                }
+                // 随机进度
+                progress += random(1, 5);
+
+                // 随机进度不能超过 98%，以免页面还没加载完毕，进度已经 100% 了
+                if(progress > 98){
+                    progress = 98;
+                }
+                $progress.style.width = progress + '%';
+                onprogress();
+            }, timeout);
+        };
+
+        // 开始跑进度
+        onprogress();
+//====================================================================================        
+        
+
+		
+        window.onload = function(){
+        	var app = angular.module("app",[]);
+			
+			app.controller("all",function($scope,$rootScope,$interval,$timeout){
+				//计时器
+				var time = ""
+				//设置主页刚开始为显示
+				$scope.aa = true;
+				//设置游戏页刚开始为隐藏
+				$scope.bb = false;
+				//设置结束页刚开始为隐藏
+				$scope.cc = false;
+				//点击开始游戏
+				$scope.playGame = function(){
+					$scope.aa = false;
+					$scope.bb = true;
+					
+					//游戏页开始显示
+					if ($scope.bb) {
+						$timeout(function(){
+							time = $interval(function(){
+								$rootScope.interGame();
+							},1000)
+						},2000)
+						
+						$timeout(function(){
+							$interval.cancel(time);
+							console.log("你的总得分"+$rootScope.score);
+							$scope.cc = true;
+							angular.element(".end").addClass("animated slideInUp");
+						},13000)
+						
+					}
+				}
+				//重新游戏
+				$scope.again = function(){
+					$scope.cc = false;
+					$scope.aa = true;
+					$scope.bb = false;
+					$rootScope.score = 0;
+				}
+				
+				
+			})
+			
+	        app.controller('game',function($scope,$timeout,$rootScope){
+	        	$rootScope.score = 0//计算得分
+				$scope.clickAble = true;//能点击老鼠
+	  			//声明一个地鼠数组。
+	  			$scope.dsArr = [];
+	  			//循环放入图片
+	  			for(var i=0;i<16;i++){
+					$scope.dsArr.push({
+						imgSrc:"img/00.jpg"
+					})
+				};
+				
+				//进入游戏
+				$rootScope.interGame = function(){
+					//保证出现老鼠和消失老鼠的随机数一致。
+					var num = parseInt(Math.random()*16);
+					$scope.dsArr[num].imgSrc = "img/01.jpg";
+					$timeout(function(){
+						$scope.dsArr[num].imgSrc = "img/00.jpg";
+						$scope.clickAble = true;
+					},1000)
+					
+				}
+				
+				//点击老鼠
+				$scope.clickMouse = function($event){
+//					console.log(angular.element($event.target).attr("src"));
+						if(angular.element($event.target).attr("src")=="img/01.jpg"&&$scope.clickAble){
+							$rootScope.score +=100;
+							$scope.clickAble = false;
+							console.log($rootScope.score);
+							angular.element($event.target).attr("src","img/02.jpg");
+						}
+				}
+				
+	  		});
+	        
+		        window.loaded = true;
+		    };
+		
+		})(window,angular);
+		
+			
+		</script>
+	</body>
+</html>
